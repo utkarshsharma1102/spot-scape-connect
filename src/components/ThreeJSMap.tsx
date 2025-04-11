@@ -1,7 +1,7 @@
-
 import React, { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Text } from '@react-three/drei';
+import * as THREE from 'three'; // Add the proper import for THREE
 
 interface ParkingSpotProps {
   position: [number, number, number];
