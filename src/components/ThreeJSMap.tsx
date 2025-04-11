@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -90,6 +90,26 @@ const Ground: React.FC = () => {
   );
 };
 
+// Setup helper component
+const SceneSetup: React.FC = () => {
+  const { gl, scene } = useThree();
+  
+  useEffect(() => {
+    // Set renderer parameters for better performance
+    gl.setPixelRatio(window.devicePixelRatio);
+    gl.shadowMap.enabled = true;
+    gl.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    // Set scene background
+    scene.background = new THREE.Color('#1e3a8a');
+    
+    // Log successful setup
+    console.log('Three.js scene setup complete');
+  }, [gl, scene]);
+  
+  return null;
+};
+
 // Create a scene component to better organize the 3D elements
 const Scene: React.FC<{
   parkingSpots: any[];
@@ -97,9 +117,10 @@ const Scene: React.FC<{
 }> = ({ parkingSpots, onSpotClick }) => {
   return (
     <>
+      <SceneSetup />
       <PerspectiveCamera makeDefault position={[0, 10, 15]} />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[10, 10, 5]} intensity={1.5} castShadow />
       
       {/* City elements */}
       <Ground />
@@ -140,6 +161,7 @@ interface ThreeJSMapProps {
 
 const ThreeJSMap: React.FC<ThreeJSMapProps> = ({ onSpotSelect }) => {
   const [error, setError] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Mock parking spot data
   const parkingSpots = [
@@ -159,27 +181,56 @@ const ThreeJSMap: React.FC<ThreeJSMapProps> = ({ onSpotSelect }) => {
     }
   };
 
+  useEffect(() => {
+    // Check if WebGL is supported
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      
+      if (!gl) {
+        console.error('WebGL not supported');
+        setError('WebGL is not supported by your browser. Please try a different browser.');
+      } else {
+        console.log('WebGL is supported');
+      }
+    } catch (e) {
+      console.error('Error checking WebGL support:', e);
+      setError('Error initializing graphics. Please try a different browser.');
+    }
+  }, []);
+
   return (
-    <div className="three-scene-container w-full h-[500px] md:h-[700px] overflow-hidden rounded-xl bg-gradient-to-b from-blue-900 to-blue-500">
+    <div className="three-scene-container w-full h-[500px] md:h-[700px] overflow-hidden rounded-xl bg-gradient-to-b from-blue-900 to-blue-500 relative">
       {error ? (
-        <div className="w-full h-full flex items-center justify-center text-white">
-          <p>Error loading 3D scene: {error}</p>
+        <div className="absolute inset-0 flex items-center justify-center text-white bg-blue-900 bg-opacity-80 p-4">
+          <p className="text-center">{error}</p>
         </div>
       ) : (
-        <Canvas shadows 
+        <Canvas 
+          shadows
+          dpr={[1, 2]} // Limit pixel ratio for performance
           onCreated={({ gl }) => {
+            console.log('Canvas created');
+            setIsLoaded(true);
             gl.setClearColor(new THREE.Color('#1e3a8a'), 1);
           }}
           onError={(e) => {
             console.error("Canvas error:", e);
-            setError("Failed to load 3D scene");
+            setError("Failed to load 3D scene. Try refreshing the page.");
           }}>
           <Scene parkingSpots={parkingSpots} onSpotClick={handleSpotClick} />
         </Canvas>
       )}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm px-4 py-2 bg-black bg-opacity-50 rounded-full">
-        Click and drag to rotate. Scroll to zoom. Click on a parking spot to view details.
-      </div>
+      {!error && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm px-4 py-2 bg-black bg-opacity-50 rounded-full">
+          Click and drag to rotate. Scroll to zoom. Click on a parking spot to view details.
+        </div>
+      )}
+      {!isLoaded && !error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-blue-900 bg-opacity-80">
+          <p className="text-white text-xl">Loading 3D scene...</p>
+        </div>
+      )}
     </div>
   );
 };
