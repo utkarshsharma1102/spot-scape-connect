@@ -38,11 +38,36 @@ const MapView: React.FC<MapViewProps> = ({ onSpotSelect }) => {
     // Initialize map centered on India
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://demotiles.maplibre.org/style.json', // Free map style
+      // Use a satellite-style map
+      style: {
+        version: 8,
+        sources: {
+          'raster-tiles': {
+            type: 'raster',
+            tiles: [
+              'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            ],
+            tileSize: 256,
+            attribution: 'Esri, Maxar, Earthstar Geographics, CNES/Airbus DS, USDA FSA, USGS, Getmapping, Aerogrid, IGN, IGP, and the GIS User Community'
+          }
+        },
+        layers: [
+          {
+            id: 'simple-tiles',
+            type: 'raster',
+            source: 'raster-tiles',
+            minzoom: 0,
+            maxzoom: 22
+          }
+        ]
+      },
       center: [78.9629, 20.5937], // Center of India
       zoom: 4,
-      attributionControl: true,
+      attributionControl: false, // Fixed type error by setting to false
     });
+
+    // Add attribution control separately
+    map.current.addControl(new maplibregl.AttributionControl(), 'bottom-right');
 
     // Add zoom and rotation controls
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
@@ -109,6 +134,9 @@ const MapView: React.FC<MapViewProps> = ({ onSpotSelect }) => {
             <span>Unavailable</span>
           </div>
         </div>
+      </div>
+      <div className="absolute top-4 left-4 bg-white/80 p-2 rounded-md text-sm font-semibold">
+        <span>SpotScape Satellite View</span>
       </div>
     </div>
   );
