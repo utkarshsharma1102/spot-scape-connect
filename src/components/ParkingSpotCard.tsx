@@ -39,7 +39,7 @@ const ParkingSpotCard: React.FC<ParkingSpotCardProps> = ({
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">{name}</CardTitle>
           <Badge variant="outline" className="bg-accent text-accent-foreground">
-            ${price}/hr
+            ₹{price}/hr
           </Badge>
         </div>
         <CardDescription className="flex items-center text-sm">

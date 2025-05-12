@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Text } from '@react-three/drei';
 
@@ -54,7 +54,7 @@ const ParkingSpot: React.FC<ParkingSpotProps> = ({ position, color, name, price,
         anchorX="center"
         anchorY="middle"
       >
-        {isAvailable ? `$${price}/hr` : "Unavailable"}
+        {isAvailable ? `₹${price}/hr` : "Unavailable"}
       </Text>
     </group>
   );
@@ -94,13 +94,30 @@ interface ThreeJSMapProps {
 }
 
 const ThreeJSMap: React.FC<ThreeJSMapProps> = ({ onSpotSelect }) => {
-  // Mock parking spot data
+  const [isWebGLSupported, setIsWebGLSupported] = useState(true);
+  
+  useEffect(() => {
+    // Check if WebGL is supported
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      setIsWebGLSupported(!!gl);
+      console.info("WebGL is supported");
+      console.info("Canvas created");
+      console.info("Three.js scene setup complete");
+    } catch (e) {
+      setIsWebGLSupported(false);
+      console.error("WebGL not supported:", e);
+    }
+  }, []);
+
+  // Mock parking spot data for Indian cities
   const parkingSpots = [
-    { id: 1, name: "Downtown Spot A", position: [-5, 0, -2], price: "5.00", isAvailable: true, color: "#2A9D8F" },
-    { id: 2, name: "Main St Spot", position: [4, 0, 1], price: "3.50", isAvailable: true, color: "#2A9D8F" },
-    { id: 3, name: "Oak Avenue Spot", position: [-3, 0, 6], price: "4.25", isAvailable: false, color: "#2A9D8F" },
-    { id: 4, name: "Market Parking", position: [8, 0, -4], price: "2.75", isAvailable: true, color: "#2A9D8F" },
-    { id: 5, name: "Central Spot", position: [0, 0, 0], price: "6.50", isAvailable: true, color: "#F4A261" },
+    { id: 1, name: "Delhi Central Park", position: [-5, 0, -2], price: "200", isAvailable: true, color: "#2A9D8F" },
+    { id: 2, name: "Mumbai Marina", position: [4, 0, 1], price: "350", isAvailable: true, color: "#2A9D8F" },
+    { id: 3, name: "Bangalore Tech Park", position: [-3, 0, 6], price: "250", isAvailable: false, color: "#2A9D8F" },
+    { id: 4, name: "Chennai Beach Spot", position: [8, 0, -4], price: "180", isAvailable: true, color: "#2A9D8F" },
+    { id: 5, name: "Kolkata Market", position: [0, 0, 0], price: "150", isAvailable: true, color: "#F4A261" },
   ];
 
   const handleSpotClick = (spot: any) => {
@@ -109,22 +126,34 @@ const ThreeJSMap: React.FC<ThreeJSMapProps> = ({ onSpotSelect }) => {
     }
   };
 
+  if (!isWebGLSupported) {
+    return (
+      <div className="three-scene-container w-full h-[500px] md:h-[700px] overflow-hidden rounded-xl bg-gradient-to-b from-blue-900 to-blue-500 flex items-center justify-center">
+        <div className="text-white text-center p-6 bg-black/50 rounded-lg">
+          <h3 className="text-xl font-bold mb-2">WebGL Not Supported</h3>
+          <p>Your browser or device doesn't support 3D graphics. Please try a different browser or device.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="three-scene-container w-full h-[500px] md:h-[700px] overflow-hidden rounded-xl bg-gradient-to-b from-blue-900 to-blue-500">
+    <div className="three-scene-container w-full h-[500px] md:h-[700px] overflow-hidden rounded-xl bg-gradient-to-b from-orange-900 to-orange-500">
       <Canvas shadows>
         <PerspectiveCamera makeDefault position={[0, 10, 15]} />
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
         
-        {/* City elements */}
+        {/* Indian city elements */}
         <Ground />
         <Street position={[0, 0, 0]} width={10} length={30} />
         <Street position={[0, 0, 0]} width={30} length={10} />
         
-        <Building position={[-8, 2, -8]} height={4} width={5} depth={5} />
-        <Building position={[8, 3, -8]} height={6} width={4} depth={4} />
-        <Building position={[-8, 4, 8]} height={8} width={6} depth={6} />
-        <Building position={[8, 2.5, 8]} height={5} width={5} depth={5} />
+        {/* Buildings representing Indian architecture */}
+        <Building position={[-8, 4, -8]} height={8} width={5} depth={5} /> {/* Representing Taj Hotel */}
+        <Building position={[8, 6, -8]} height={12} width={4} depth={4} /> {/* Representing Gateway of India */}
+        <Building position={[-8, 7, 8]} height={14} width={6} depth={6} /> {/* Representing India Gate */}
+        <Building position={[8, 5, 8]} height={10} width={5} depth={5} /> {/* Representing Lotus Temple */}
         
         {/* Parking spots */}
         {parkingSpots.map((spot) => (

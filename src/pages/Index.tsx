@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -9,20 +8,20 @@ import SpotDetail from '@/components/SpotDetail';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { CarFront, Clock, MapPin, CreditCard } from "lucide-react";
 
-// Mock data
+// Mock data updated with Indian locations and rupee pricing
 const parkingSpots = [
   {
     id: 1,
-    name: "Downtown Secure Parking",
-    address: "123 Main St, Downtown",
-    price: "5.00",
+    name: "Delhi Connaught Place Parking",
+    address: "Block K, Connaught Place, New Delhi",
+    price: "200",
     rating: 4.8,
-    distance: "0.5 miles",
+    distance: "0.5 km",
     availability: "Available 24/7",
     imageUrl: "https://images.unsplash.com/photo-1470224114660-3f6686c562eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-    description: "Secure parking spot in the heart of downtown. Easy access to restaurants, shops and entertainment venues. Well-lit area with 24/7 security cameras.",
+    description: "Secure parking spot in the heart of Delhi's business district. Easy access to restaurants, shops and entertainment venues. Well-lit area with 24/7 security cameras.",
     owner: {
-      name: "Michael Johnson",
+      name: "Rajiv Kumar",
       image: "https://randomuser.me/api/portraits/men/32.jpg",
       joinedDate: "March 2023"
     },
@@ -30,33 +29,33 @@ const parkingSpots = [
   },
   {
     id: 2,
-    name: "Riverside Parking Space",
-    address: "456 River Ave, Riverside",
-    price: "3.50",
+    name: "Mumbai Marine Drive",
+    address: "Marine Drive, Nariman Point, Mumbai",
+    price: "350",
     rating: 4.2,
-    distance: "1.2 miles",
+    distance: "1.2 km",
     availability: "8AM - 10PM",
     imageUrl: "https://images.unsplash.com/photo-1621953468372-f156213d60a7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-    description: "Convenient riverside parking with beautiful views. Perfect for daily commuters or weekend visitors to the riverside park and restaurants.",
+    description: "Convenient seaside parking with beautiful views of the Arabian Sea. Perfect for daily commuters or weekend visitors to Marine Drive and nearby attractions.",
     owner: {
-      name: "Sarah Williams",
+      name: "Priya Shah",
       image: "https://randomuser.me/api/portraits/women/44.jpg",
       joinedDate: "January 2022"
     },
-    features: ["River View", "Paved", "Near Public Transit"]
+    features: ["Sea View", "Paved", "Near Public Transit"]
   },
   {
     id: 3,
-    name: "Central Market Parking",
-    address: "789 Market St, City Center",
-    price: "4.25",
+    name: "Bangalore MG Road Parking",
+    address: "MG Road, Shivaji Nagar, Bangalore",
+    price: "250",
     rating: 4.5,
-    distance: "0.8 miles",
+    distance: "0.8 km",
     availability: "6AM - 8PM",
     imageUrl: "https://images.unsplash.com/photo-1583849227440-2a8a2867ff17?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-    description: "Prime location near the Central Market. Perfect for shoppers and market visitors. Wide space suitable for larger vehicles and easy in-out access.",
+    description: "Prime location near Bangalore's shopping hub. Perfect for shoppers and visitors. Wide space suitable for larger vehicles and easy in-out access.",
     owner: {
-      name: "David Chen",
+      name: "Amit Patel",
       image: "https://randomuser.me/api/portraits/men/55.jpg",
       joinedDate: "August 2022"
     },
@@ -64,16 +63,16 @@ const parkingSpots = [
   },
   {
     id: 4,
-    name: "Tech District Spot",
-    address: "321 Innovation Way, Tech District",
-    price: "6.50",
+    name: "Hyderabad HITEC City Spot",
+    address: "HITEC City, Hyderabad, Telangana",
+    price: "300",
     rating: 4.9,
-    distance: "1.5 miles",
+    distance: "1.5 km",
     availability: "Weekdays 7AM - 7PM",
     imageUrl: "https://images.unsplash.com/photo-1614629396115-6275fe8757c8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-    description: "Premium parking spot in the tech district. Electric vehicle charger available. Perfect for daily workers in the area or visitors to nearby tech campuses.",
+    description: "Premium parking spot in Hyderabad's tech district. Electric vehicle charger available. Perfect for daily workers in the area or visitors to nearby tech campuses.",
     owner: {
-      name: "Lisa Montgomery",
+      name: "Lakshmi Rao",
       image: "https://randomuser.me/api/portraits/women/65.jpg",
       joinedDate: "May 2023"
     },
@@ -91,7 +90,7 @@ const Index = () => {
     setSelectedSpot(fullSpot);
     setIsDialogOpen(true);
   };
-
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -104,9 +103,9 @@ const Index = () => {
         <section className="py-12 px-6 bg-gray-50">
           <div className="container mx-auto">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-secondary mb-3">Find Available Spots in 3D</h2>
+              <h2 className="text-3xl font-bold text-secondary mb-3">Find Available Spots Across India in 3D</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Explore our interactive 3D map to find the perfect parking spot near your destination
+                Explore our interactive 3D map to find the perfect parking spot near your destination in top Indian cities
               </p>
             </div>
             
@@ -124,7 +123,7 @@ const Index = () => {
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-secondary mb-3">Featured Parking Spots</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Discover top-rated parking spots from our community of spot owners
+                Discover top-rated parking spots from our community of spot owners across India
               </p>
             </div>
             
@@ -170,7 +169,7 @@ const Index = () => {
               <FeatureHighlight
                 icon={<CreditCard className="h-8 w-8" />}
                 title="Easy Payment"
-                description="Pay securely through our platform with various payment methods"
+                description="Pay securely through our platform with various UPI and card payment methods"
               />
               <FeatureHighlight
                 icon={<CarFront className="h-8 w-8" />}
@@ -191,7 +190,7 @@ const Index = () => {
                   <span className="font-poppins font-bold text-xl">SpotScape</span>
                 </div>
                 <p className="mt-2 text-sm text-gray-300 max-w-xs">
-                  Connecting parking spot owners with people who need a place to park
+                  Connecting parking spot owners with people who need a place to park across India
                 </p>
               </div>
               

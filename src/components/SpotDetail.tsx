@@ -53,7 +53,7 @@ const SpotDetail: React.FC<SpotDetailProps> = ({ spot, onClose }) => {
             </CardDescription>
           </div>
           <Badge variant="outline" className="bg-accent text-accent-foreground text-lg">
-            ${spot.price}/hr
+            ₹{spot.price}/hr
           </Badge>
         </div>
       </CardHeader>
