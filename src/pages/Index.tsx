@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import ThreeJSMap from '@/components/ThreeJSMap';
+import MapView from '@/components/MapView';
 import ParkingSpotCard from '@/components/ParkingSpotCard';
 import FeatureHighlight from '@/components/FeatureHighlight';
 import SpotDetail from '@/components/SpotDetail';
@@ -99,20 +100,20 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* 3D Map Section */}
+        {/* Map Section */}
         <section className="py-12 px-6 bg-gray-50">
           <div className="container mx-auto">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-secondary mb-3">Find Available Spots Across India in 3D</h2>
+              <h2 className="text-3xl font-bold text-secondary mb-3">Find Available Spots Across India</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Explore our interactive 3D map to find the perfect parking spot near your destination in top Indian cities
+                Explore our interactive map to find the perfect parking spot near your destination in top Indian cities
               </p>
             </div>
             
-            <ThreeJSMap onSpotSelect={handleSpotSelect} />
+            <MapView onSpotSelect={handleSpotSelect} />
             
             <div className="text-center mt-4 text-sm text-gray-500">
-              Click and drag to rotate. Click on a parking spot to view details.
+              Click on a marker to view details and book a spot
             </div>
           </div>
         </section>
@@ -159,7 +160,7 @@ const Index = () => {
               <FeatureHighlight
                 icon={<MapPin className="h-8 w-8" />}
                 title="Find Nearby Spots"
-                description="Search for available parking spots near your destination using our interactive 3D map"
+                description="Search for available parking spots near your destination using our interactive map"
               />
               <FeatureHighlight
                 icon={<Clock className="h-8 w-8" />}
