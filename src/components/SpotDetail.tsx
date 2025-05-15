@@ -4,8 +4,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Clock, MapPin, Star, Car, Shield } from "lucide-react";
+import { Calendar, Clock, MapPin, Star, Shield } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BookingForm from './BookingForm';
+import SpotReviews from './SpotReviews';
 
 interface SpotDetailProps {
   spot: {
@@ -28,6 +30,7 @@ interface SpotDetailProps {
 }
 
 const SpotDetail: React.FC<SpotDetailProps> = ({ spot, onClose }) => {
+  const [activeTab, setActiveTab] = useState("details");
   const [showBookingForm, setShowBookingForm] = useState(false);
 
   const handleBookingComplete = () => {
@@ -85,34 +88,45 @@ const SpotDetail: React.FC<SpotDetailProps> = ({ spot, onClose }) => {
             onBookingComplete={handleBookingComplete}
           />
         ) : (
-          <>
-            <div>
-              <h3 className="font-semibold text-lg mb-2">About this spot</h3>
-              <p className="text-muted-foreground">{spot.description}</p>
-            </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            </TabsList>
             
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Features</h3>
-              <div className="flex flex-wrap gap-2">
-                {spot.features.map((feature, index) => (
-                  <Badge key={index} variant="secondary">{feature}</Badge>
-                ))}
+            <TabsContent value="details" className="space-y-4 pt-4">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">About this spot</h3>
+                <p className="text-muted-foreground">{spot.description}</p>
               </div>
-            </div>
-            
-            <div className="border rounded-lg p-4 bg-muted/30">
-              <div className="flex items-center">
-                <Avatar className="h-12 w-12 mr-4">
-                  <AvatarImage src={spot.owner.image} alt={spot.owner.name} />
-                  <AvatarFallback>{spot.owner.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{spot.owner.name}</p>
-                  <p className="text-sm text-muted-foreground">Member since {spot.owner.joinedDate}</p>
+              
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Features</h3>
+                <div className="flex flex-wrap gap-2">
+                  {spot.features.map((feature, index) => (
+                    <Badge key={index} variant="secondary">{feature}</Badge>
+                  ))}
                 </div>
               </div>
-            </div>
-          </>
+              
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <div className="flex items-center">
+                  <Avatar className="h-12 w-12 mr-4">
+                    <AvatarImage src={spot.owner.image} alt={spot.owner.name} />
+                    <AvatarFallback>{spot.owner.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{spot.owner.name}</p>
+                    <p className="text-sm text-muted-foreground">Member since {spot.owner.joinedDate}</p>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="reviews" className="pt-4">
+              <SpotReviews spotId={spot.id} />
+            </TabsContent>
+          </Tabs>
         )}
       </CardContent>
       
