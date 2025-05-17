@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Slider } from "@/components/ui/slider"; 
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Search, Filter } from "lucide-react";
+import { Calendar as CalendarIcon, Search, Filter, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBooking, SearchFilters } from '@/contexts/BookingContext';
 import { toast } from '@/hooks/use-toast';
@@ -24,6 +25,7 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({ onSearch, initia
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [priceRange, setPriceRange] = useState('');
   const [availability, setAvailability] = useState('');
+  const [priceSliderValue, setPriceSliderValue] = useState([200]);
 
   // Set initial location if provided
   useEffect(() => {
@@ -31,6 +33,20 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({ onSearch, initia
       setLocation(initialSearch);
     }
   }, [initialSearch]);
+
+  // Convert slider value to price range
+  useEffect(() => {
+    const value = priceSliderValue[0];
+    if (value <= 100) {
+      setPriceRange('0-100');
+    } else if (value <= 200) {
+      setPriceRange('100-200');
+    } else if (value <= 300) {
+      setPriceRange('200-300');
+    } else {
+      setPriceRange('300+');
+    }
+  }, [priceSliderValue]);
 
   const handleSearch = () => {
     const filters = {
@@ -44,7 +60,7 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({ onSearch, initia
     onSearch(filters);
     toast({
       title: "Search applied",
-      description: `Searching for parking spots near ${location || 'your location'}`,
+      description: `Searching for parking spots near ${location || 'your location'}${priceRange ? ` with price range ${priceRange}` : ''}`,
     });
   };
 
@@ -85,17 +101,16 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({ onSearch, initia
           </PopoverContent>
         </Popover>
 
-        <Select value={priceRange} onValueChange={setPriceRange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Price Range" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="0-100">₹0 - ₹100</SelectItem>
-            <SelectItem value="100-200">₹100 - ₹200</SelectItem>
-            <SelectItem value="200-300">₹200 - ₹300</SelectItem>
-            <SelectItem value="300+">₹300+</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">Price Range: {priceRange || 'Any'}</p>
+          <Slider 
+            defaultValue={[200]} 
+            max={400} 
+            step={50} 
+            value={priceSliderValue} 
+            onValueChange={setPriceSliderValue}
+          />
+        </div>
 
         <Select value={availability} onValueChange={setAvailability}>
           <SelectTrigger>

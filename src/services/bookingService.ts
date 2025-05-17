@@ -12,6 +12,15 @@ export interface Booking {
   totalPrice: number;
   status: 'upcoming' | 'completed' | 'cancelled';
   bookedAt: string;
+  paymentMethod?: string;
+}
+
+export interface PaymentDetails {
+  method: string;
+  amount: number;
+  currency: string;
+  status: string;
+  transactionId: string;
 }
 
 const BOOKINGS_STORAGE_KEY = 'parkingBookings';
@@ -38,7 +47,8 @@ export const bookingService = {
     date: Date,
     time: string,
     duration: number,
-    price: string
+    price: string,
+    paymentMethod: string = 'card'
   ): Booking => {
     const allBookings = bookingService.getAllBookings();
     
@@ -56,6 +66,7 @@ export const bookingService = {
       totalPrice,
       status: 'upcoming',
       bookedAt: new Date().toISOString(),
+      paymentMethod
     };
     
     const updatedBookings = [...allBookings, newBooking];
@@ -88,5 +99,26 @@ export const bookingService = {
     allBookings[bookingIndex].status = 'completed';
     localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(allBookings));
     return true;
+  },
+  
+  processPayment: async (amount: number, method: string): Promise<PaymentDetails> => {
+    // This is a mock implementation for a payment gateway
+    return new Promise((resolve, reject) => {
+      // Simulate network delay
+      setTimeout(() => {
+        // Simulate a successful payment 95% of the time
+        if (Math.random() < 0.95) {
+          resolve({
+            method,
+            amount,
+            currency: 'INR',
+            status: 'completed',
+            transactionId: `TXN${Date.now()}`
+          });
+        } else {
+          reject(new Error('Payment processing failed. Please try again.'));
+        }
+      }, 2000);
+    });
   }
 };

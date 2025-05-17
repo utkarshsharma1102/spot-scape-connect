@@ -6,10 +6,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
+import { bookingService } from '@/services/bookingService';
 
 interface BookingFormProps {
   spotId: number;
@@ -23,6 +24,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ spotId, spotName, price, onBo
   const [startTime, setStartTime] = useState('');
   const [duration, setDuration] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('card');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -39,6 +41,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ spotId, spotName, price, onBo
     setIsLoading(true);
 
     try {
+      // Process payment first
+      const paymentSuccess = await processPayment(totalPrice);
+      
+      if (!paymentSuccess) {
+        throw new Error("Payment processing failed");
+      }
+
       // Get existing bookings from localStorage or initialize empty array
       const existingBookingsJson = localStorage.getItem('parkingBookings');
       const existingBookings = existingBookingsJson ? JSON.parse(existingBookingsJson) : [];
@@ -55,12 +64,18 @@ const BookingForm: React.FC<BookingFormProps> = ({ spotId, spotName, price, onBo
         totalPrice: parseInt(duration) * parseInt(price.replace(/\D/g, '')),
         status: 'upcoming',
         bookedAt: new Date().toISOString(),
+        paymentMethod: paymentMethod
       };
       
       // Add new booking to array and save to localStorage
       const updatedBookings = [...existingBookings, newBooking];
       localStorage.setItem('parkingBookings', JSON.stringify(updatedBookings));
       
+      toast({
+        title: "Payment successful!",
+        description: `₹${totalPrice} has been charged to your ${paymentMethod}.`,
+      });
+
       setTimeout(() => {
         toast({
           title: "Booking confirmed!",
@@ -86,11 +101,22 @@ const BookingForm: React.FC<BookingFormProps> = ({ spotId, spotName, price, onBo
       console.error('Booking error:', error);
       toast({
         title: "Booking failed",
-        description: "An error occurred while processing your booking.",
+        description: error instanceof Error ? error.message : "An error occurred while processing your booking.",
         variant: "destructive",
       });
       setIsLoading(false);
     }
+  };
+
+  const processPayment = async (amount: number): Promise<boolean> => {
+    // Simulate payment processing delay
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Simulate a successful payment 95% of the time
+        const isSuccessful = Math.random() < 0.95;
+        resolve(isSuccessful);
+      }, 2000);
+    });
   };
 
   const totalPrice = parseInt(duration) * parseInt(price.replace(/\D/g, ''));
@@ -172,6 +198,21 @@ const BookingForm: React.FC<BookingFormProps> = ({ spotId, spotName, price, onBo
         </Select>
       </div>
 
+      <div className="space-y-2">
+        <Label>Payment Method</Label>
+        <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select payment method" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="card">Credit/Debit Card</SelectItem>
+            <SelectItem value="upi">UPI</SelectItem>
+            <SelectItem value="netbanking">Net Banking</SelectItem>
+            <SelectItem value="wallet">Digital Wallet</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="pt-2 border-t">
         <div className="flex justify-between mb-4">
           <span className="font-medium">Total Price:</span>
@@ -179,10 +220,11 @@ const BookingForm: React.FC<BookingFormProps> = ({ spotId, spotName, price, onBo
         </div>
         <Button 
           onClick={handleBooking} 
-          className="w-full bg-primary hover:bg-primary/90"
+          className="w-full bg-primary hover:bg-primary/90 flex items-center justify-center gap-2"
           disabled={isLoading}
         >
-          {isLoading ? "Processing..." : "Confirm Booking"}
+          {isLoading ? "Processing..." : "Pay & Book Now"}
+          {!isLoading && <CreditCard className="h-4 w-4" />}
         </Button>
       </div>
     </div>

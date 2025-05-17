@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, Star, Car } from "lucide-react";
+import { Clock, MapPin, Star, Car, CreditCard } from "lucide-react";
 
 interface ParkingSpotCardProps {
   id: number;
@@ -66,10 +66,13 @@ const ParkingSpotCard: React.FC<ParkingSpotCardProps> = ({
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full bg-primary hover:bg-primary/90" onClick={(e) => {
+        <Button className="w-full bg-primary hover:bg-primary/90 flex items-center justify-center" onClick={(e) => {
           e.stopPropagation(); // Prevent triggering the card's onClick
           if (onClick) onClick();
-        }}>Book Now</Button>
+        }}>
+          <CreditCard className="mr-2 h-4 w-4" />
+          Book Now
+        </Button>
       </CardFooter>
     </Card>
   );
