@@ -14,6 +14,7 @@ interface ParkingSpotCardProps {
   distance: string;
   availability: string;
   imageUrl: string;
+  onClick?: () => void; // Added onClick as an optional prop
 }
 
 const ParkingSpotCard: React.FC<ParkingSpotCardProps> = ({
@@ -24,10 +25,11 @@ const ParkingSpotCard: React.FC<ParkingSpotCardProps> = ({
   rating,
   distance,
   availability,
-  imageUrl
+  imageUrl,
+  onClick
 }) => {
   return (
-    <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+    <Card className="overflow-hidden transition-shadow hover:shadow-lg cursor-pointer" onClick={onClick}>
       <div className="h-48 overflow-hidden">
         <img 
           src={imageUrl || "/placeholder.svg"} 
@@ -64,7 +66,10 @@ const ParkingSpotCard: React.FC<ParkingSpotCardProps> = ({
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full bg-primary hover:bg-primary/90">Book Now</Button>
+        <Button className="w-full bg-primary hover:bg-primary/90" onClick={(e) => {
+          e.stopPropagation(); // Prevent triggering the card's onClick
+          if (onClick) onClick();
+        }}>Book Now</Button>
       </CardFooter>
     </Card>
   );
