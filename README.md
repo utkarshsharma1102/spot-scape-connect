@@ -49,10 +49,3 @@ SpotScape is built to solve the everyday hassle of finding reliable parking—es
 
 ---
 
-## 📦 Installation (Dev Setup)
-
-```bash
-git clone https://github.com/yourusername/spotscape.git
-cd spotscape
-npm install  # or pip install -r requirements.txt for Python backend
-npm run dev  # or python manage.py runserver
