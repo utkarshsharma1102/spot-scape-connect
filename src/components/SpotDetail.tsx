@@ -8,6 +8,9 @@ import { Calendar, Clock, MapPin, Star, Shield } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BookingForm from './BookingForm';
 import SpotReviews from './SpotReviews';
+import { useBooking } from '@/contexts/BookingContext';
+import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface SpotDetailProps {
   spot: {
@@ -32,10 +35,27 @@ interface SpotDetailProps {
 const SpotDetail: React.FC<SpotDetailProps> = ({ spot, onClose }) => {
   const [activeTab, setActiveTab] = useState("details");
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const { addBooking } = useBooking();
+  const navigate = useNavigate();
 
   const handleBookingComplete = () => {
     setShowBookingForm(false);
     setActiveTab("details");
+    toast({
+      title: "Booking Complete!",
+      description: "Your parking spot has been successfully booked.",
+    });
+    
+    // Close the dialog after a brief delay
+    setTimeout(() => {
+      onClose();
+      
+      // Offer to navigate to bookings after successful booking
+      const shouldNavigate = window.confirm("Would you like to view your bookings?");
+      if (shouldNavigate) {
+        navigate('/profile');
+      }
+    }, 1500);
   };
 
   return (

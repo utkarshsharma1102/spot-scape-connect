@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,23 +9,42 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Search, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBooking, SearchFilters } from '@/contexts/BookingContext';
+import { toast } from '@/hooks/use-toast';
 
 interface SearchFiltersProps {
-  onSearch: (filters: any) => void;
+  onSearch: (filters: SearchFilters) => void;
+  initialSearch?: string;
 }
 
-const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
-  const [location, setLocation] = useState('');
-  const [date, setDate] = useState<Date>();
+const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({ onSearch, initialSearch }) => {
+  const navigate = useNavigate();
+  const { setSearchFilters } = useBooking();
+  const [location, setLocation] = useState(initialSearch || '');
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [priceRange, setPriceRange] = useState('');
   const [availability, setAvailability] = useState('');
 
+  // Set initial location if provided
+  useEffect(() => {
+    if (initialSearch) {
+      setLocation(initialSearch);
+    }
+  }, [initialSearch]);
+
   const handleSearch = () => {
-    onSearch({
+    const filters = {
       location,
       date,
       priceRange,
       availability
+    };
+    
+    setSearchFilters(filters);
+    onSearch(filters);
+    toast({
+      title: "Search applied",
+      description: `Searching for parking spots near ${location || 'your location'}`,
     });
   };
 
@@ -98,4 +118,4 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
   );
 };
 
-export default SearchFilters;
+export default SearchFiltersComponent;

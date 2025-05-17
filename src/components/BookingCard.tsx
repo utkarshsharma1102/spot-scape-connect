@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { Booking } from '../services/bookingService';
+import { useBooking } from '@/contexts/BookingContext';
+import { toast } from '@/hooks/use-toast';
 
 interface BookingCardProps {
   booking: Booking;
@@ -16,6 +18,20 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onCancel }) => {
   const badgeVariant = 
     booking.status === 'upcoming' ? 'default' : 
     booking.status === 'completed' ? 'secondary' : 'destructive';
+  
+  const { cancelBooking } = useBooking();
+  
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel(booking.id);
+    } else {
+      cancelBooking(booking.id);
+    }
+    toast({
+      title: "Booking cancelled",
+      description: `Your booking for ${booking.spotName} has been cancelled.`,
+    });
+  };
   
   return (
     <Card className="overflow-hidden">
@@ -43,13 +59,13 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onCancel }) => {
         </div>
       </CardContent>
       
-      {isUpcoming && onCancel && (
+      {isUpcoming && (
         <CardFooter className="border-t bg-muted/10 px-4 py-3">
           <Button 
             variant="outline" 
             size="sm" 
             className="ml-auto text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onCancel(booking.id)}
+            onClick={() => handleCancel()}
           >
             Cancel Booking
           </Button>

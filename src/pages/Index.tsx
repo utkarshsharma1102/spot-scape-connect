@@ -1,13 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import MapView from '@/components/MapView';
 import ParkingSpotCard from '@/components/ParkingSpotCard';
 import FeatureHighlight from '@/components/FeatureHighlight';
 import SpotDetail from '@/components/SpotDetail';
+import SearchFilters from '@/components/SearchFilters';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { CarFront, Clock, MapPin, CreditCard } from "lucide-react";
+import { SearchFilters as SearchFiltersType } from '@/contexts/BookingContext';
 
 // Mock data updated with Indian locations and rupee pricing
 const parkingSpots = [
@@ -84,12 +86,73 @@ const parkingSpots = [
 const Index = () => {
   const [selectedSpot, setSelectedSpot] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [filteredSpots, setFilteredSpots] = useState(parkingSpots);
+  const [heroSearchTerm, setHeroSearchTerm] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if we have a search term from the hero section
+    const searchTerm = window.sessionStorage.getItem('heroSearch');
+    if (searchTerm) {
+      setHeroSearchTerm(searchTerm);
+      window.sessionStorage.removeItem('heroSearch'); // Clear after use
+    }
+
+    // Listen for hero search events
+    const handleHeroSearch = (event: CustomEvent<string>) => {
+      setHeroSearchTerm(event.detail);
+    };
+
+    window.addEventListener('heroSearch', handleHeroSearch as EventListener);
+    
+    return () => {
+      window.removeEventListener('heroSearch', handleHeroSearch as EventListener);
+    };
+  }, []);
 
   const handleSpotSelect = (spot: any) => {
     // Find the full spot data from our list
     const fullSpot = parkingSpots.find(ps => ps.id === spot.id) || parkingSpots[0];
     setSelectedSpot(fullSpot);
     setIsDialogOpen(true);
+  };
+
+  const handleSearch = (filters: SearchFiltersType) => {
+    let results = [...parkingSpots];
+
+    // Filter by location
+    if (filters.location) {
+      const searchTerm = filters.location.toLowerCase();
+      results = results.filter(
+        spot => spot.name.toLowerCase().includes(searchTerm) || 
+                spot.address.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Filter by price range
+    if (filters.priceRange) {
+      const [min, max] = filters.priceRange.split('-').map(Number);
+      
+      if (max) {
+        results = results.filter(
+          spot => {
+            const price = parseInt(spot.price);
+            return price >= min && price <= max;
+          }
+        );
+      } else {
+        // For "300+" case
+        results = results.filter(
+          spot => parseInt(spot.price) >= min
+        );
+      }
+    }
+
+    // Filter by availability
+    if (filters.availability === 'available') {
+      results = results.filter(spot => spot.availability.includes('24/7') || !spot.availability.includes('Weekdays'));
+    }
+
+    setFilteredSpots(results);
   };
   
   return (
@@ -101,13 +164,18 @@ const Index = () => {
         <Hero />
         
         {/* Map Section */}
-        <section className="py-12 px-6 bg-gray-50">
+        <section className="py-12 px-6 bg-gray-50 map-section">
           <div className="container mx-auto">
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-secondary mb-3">Find Available Spots Across India</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
                 Explore our interactive map to find the perfect parking spot near your destination in top Indian cities
               </p>
+            </div>
+            
+            {/* Search Filters */}
+            <div className="mb-8">
+              <SearchFilters onSearch={handleSearch} initialSearch={heroSearchTerm || undefined} />
             </div>
             
             <MapView onSpotSelect={handleSpotSelect} />
@@ -129,7 +197,7 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {parkingSpots.map((spot) => (
+              {filteredSpots.map((spot) => (
                 <ParkingSpotCard
                   key={spot.id}
                   id={spot.id}
@@ -140,9 +208,16 @@ const Index = () => {
                   distance={spot.distance}
                   availability={spot.availability}
                   imageUrl={spot.imageUrl}
+                  onClick={() => handleSpotSelect(spot)}
                 />
               ))}
             </div>
+            
+            {filteredSpots.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No parking spots match your search criteria. Please try different filters.
+              </div>
+            )}
           </div>
         </section>
         
