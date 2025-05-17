@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,19 @@ import { Calendar, Clock, MapPin, Phone, Mail, User, LogOut } from "lucide-react
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
 
+interface Booking {
+  id: number;
+  spotId: number;
+  spotName: string;
+  date: string;
+  time: string;
+  duration: number;
+  price: string;
+  totalPrice: number;
+  status: string;
+  bookedAt: string;
+}
+
 const Profile = () => {
   // Placeholder data - would come from authentication provider
   const [user, setUser] = useState({
@@ -21,42 +35,22 @@ const Profile = () => {
     avatarUrl: ""
   });
 
-  // Placeholder data - would come from database
-  const bookings = [
-    {
-      id: 1,
-      spotName: "Delhi Central Park",
-      date: "2025-06-15",
-      time: "14:00",
-      duration: 2,
-      price: "₹400",
-      status: "upcoming"
-    },
-    {
-      id: 2,
-      spotName: "Mumbai Marine Drive",
-      date: "2025-06-10",
-      time: "10:00",
-      duration: 3,
-      price: "₹1050",
-      status: "upcoming"
-    },
-    {
-      id: 3,
-      spotName: "Chennai Marina Beach",
-      date: "2025-05-28",
-      time: "09:00",
-      duration: 4,
-      price: "₹720",
-      status: "completed"
-    }
-  ];
-
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Load bookings from localStorage
+    const savedBookingsJson = localStorage.getItem('parkingBookings');
+    if (savedBookingsJson) {
+      const savedBookings = JSON.parse(savedBookingsJson);
+      setBookings(savedBookings);
+    }
+  }, []);
 
   const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder for profile update logic
+    // Save user profile data to localStorage
+    localStorage.setItem('userProfile', JSON.stringify(user));
     toast({
       title: "Profile updated",
       description: "Your profile information has been updated.",
@@ -65,7 +59,6 @@ const Profile = () => {
 
   const handleLogout = () => {
     // Placeholder for logout logic
-    console.log("Logging out...");
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
@@ -73,13 +66,32 @@ const Profile = () => {
   };
 
   const handleCancelBooking = (bookingId: number) => {
-    // Placeholder for cancel booking logic
-    console.log("Cancelling booking:", bookingId);
+    // Find the booking to cancel
+    const updatedBookings = bookings.map(booking => 
+      booking.id === bookingId ? {...booking, status: 'cancelled'} : booking
+    );
+    
+    // Update localStorage with updated bookings
+    localStorage.setItem('parkingBookings', JSON.stringify(updatedBookings));
+    setBookings(updatedBookings);
+    
     toast({
       title: "Booking cancelled",
       description: "Your booking has been cancelled successfully.",
     });
   };
+
+  // Load user data from localStorage on component mount
+  useEffect(() => {
+    const savedUserJson = localStorage.getItem('userProfile');
+    if (savedUserJson) {
+      const savedUser = JSON.parse(savedUserJson);
+      setUser(savedUser);
+    }
+  }, []);
+
+  const upcomingBookings = bookings.filter(booking => booking.status === 'upcoming');
+  const completedOrCancelledBookings = bookings.filter(booking => booking.status !== 'upcoming');
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -136,57 +148,109 @@ const Profile = () => {
                   </CardHeader>
                   <CardContent>
                     {bookings.length > 0 ? (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Parking Spot</TableHead>
-                            <TableHead>Date & Time</TableHead>
-                            <TableHead>Duration</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead></TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {bookings.map((booking) => (
-                            <TableRow key={booking.id}>
-                              <TableCell className="font-medium">{booking.spotName}</TableCell>
-                              <TableCell>
-                                <div className="flex flex-col">
-                                  <span className="flex items-center">
-                                    <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                                    {booking.date}
-                                  </span>
-                                  <span className="flex items-center text-muted-foreground">
-                                    <Clock className="h-3.5 w-3.5 mr-1.5" />
-                                    {booking.time}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell>{booking.duration} hr</TableCell>
-                              <TableCell>{booking.price}</TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant={booking.status === 'upcoming' ? 'default' : 'secondary'}
-                                >
-                                  {booking.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                {booking.status === 'upcoming' && (
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleCancelBooking(booking.id)}
-                                  >
-                                    Cancel
-                                  </Button>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                      <>
+                        {upcomingBookings.length > 0 && (
+                          <div className="mb-8">
+                            <h3 className="text-lg font-medium mb-4">Upcoming Bookings</h3>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Parking Spot</TableHead>
+                                  <TableHead>Date & Time</TableHead>
+                                  <TableHead>Duration</TableHead>
+                                  <TableHead>Price</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead></TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {upcomingBookings.map((booking) => (
+                                  <TableRow key={booking.id}>
+                                    <TableCell className="font-medium">{booking.spotName}</TableCell>
+                                    <TableCell>
+                                      <div className="flex flex-col">
+                                        <span className="flex items-center">
+                                          <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                                          {booking.date}
+                                        </span>
+                                        <span className="flex items-center text-muted-foreground">
+                                          <Clock className="h-3.5 w-3.5 mr-1.5" />
+                                          {booking.time}
+                                        </span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>{booking.duration} hr</TableCell>
+                                    <TableCell>₹{booking.totalPrice}</TableCell>
+                                    <TableCell>
+                                      <Badge
+                                        variant={booking.status === 'upcoming' ? 'default' : 'secondary'}
+                                      >
+                                        {booking.status}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      {booking.status === 'upcoming' && (
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => handleCancelBooking(booking.id)}
+                                        >
+                                          Cancel
+                                        </Button>
+                                      )}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        )}
+                        
+                        {completedOrCancelledBookings.length > 0 && (
+                          <div>
+                            <h3 className="text-lg font-medium mb-4">Past Bookings</h3>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Parking Spot</TableHead>
+                                  <TableHead>Date & Time</TableHead>
+                                  <TableHead>Duration</TableHead>
+                                  <TableHead>Price</TableHead>
+                                  <TableHead>Status</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {completedOrCancelledBookings.map((booking) => (
+                                  <TableRow key={booking.id}>
+                                    <TableCell className="font-medium">{booking.spotName}</TableCell>
+                                    <TableCell>
+                                      <div className="flex flex-col">
+                                        <span className="flex items-center">
+                                          <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                                          {booking.date}
+                                        </span>
+                                        <span className="flex items-center text-muted-foreground">
+                                          <Clock className="h-3.5 w-3.5 mr-1.5" />
+                                          {booking.time}
+                                        </span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>{booking.duration} hr</TableCell>
+                                    <TableCell>₹{booking.totalPrice}</TableCell>
+                                    <TableCell>
+                                      <Badge
+                                        variant={booking.status === 'completed' ? 'secondary' : 'destructive'}
+                                      >
+                                        {booking.status}
+                                      </Badge>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <div className="text-center py-8">
                         <p className="text-muted-foreground">You don't have any bookings yet.</p>

@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from 'react-router-dom';
 
 interface BookingFormProps {
   spotId: number;
@@ -23,6 +24,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ spotId, spotName, price, onBo
   const [duration, setDuration] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleBooking = async () => {
     if (!date || !startTime || !duration) {
@@ -37,11 +39,28 @@ const BookingForm: React.FC<BookingFormProps> = ({ spotId, spotName, price, onBo
     setIsLoading(true);
 
     try {
-      // This is a placeholder for actual booking logic
-      // We'll update this with Supabase integration
-      console.log('Booking attempt for spot:', spotId, 'on', date, 'at', startTime, 'for', duration, 'hours');
+      // Get existing bookings from localStorage or initialize empty array
+      const existingBookingsJson = localStorage.getItem('parkingBookings');
+      const existingBookings = existingBookingsJson ? JSON.parse(existingBookingsJson) : [];
       
-      // Simulate successful booking
+      // Create new booking object
+      const newBooking = {
+        id: Date.now(), // Use timestamp as unique ID
+        spotId,
+        spotName,
+        date: format(date, "yyyy-MM-dd"),
+        time: startTime,
+        duration: parseInt(duration),
+        price: price,
+        totalPrice: parseInt(duration) * parseInt(price.replace(/\D/g, '')),
+        status: 'upcoming',
+        bookedAt: new Date().toISOString(),
+      };
+      
+      // Add new booking to array and save to localStorage
+      const updatedBookings = [...existingBookings, newBooking];
+      localStorage.setItem('parkingBookings', JSON.stringify(updatedBookings));
+      
       setTimeout(() => {
         toast({
           title: "Booking confirmed!",
@@ -49,6 +68,19 @@ const BookingForm: React.FC<BookingFormProps> = ({ spotId, spotName, price, onBo
         });
         setIsLoading(false);
         onBookingComplete();
+        
+        // Ask user if they want to view their bookings
+        setTimeout(() => {
+          toast({
+            title: "View your bookings",
+            description: "Would you like to view your booking history?",
+            action: (
+              <Button size="sm" onClick={() => navigate('/profile')}>
+                Go to Profile
+              </Button>
+            ),
+          });
+        }, 1000);
       }, 1500);
     } catch (error) {
       console.error('Booking error:', error);

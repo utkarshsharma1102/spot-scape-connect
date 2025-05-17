@@ -35,6 +35,7 @@ const SpotDetail: React.FC<SpotDetailProps> = ({ spot, onClose }) => {
 
   const handleBookingComplete = () => {
     setShowBookingForm(false);
+    setActiveTab("details");
   };
 
   return (
